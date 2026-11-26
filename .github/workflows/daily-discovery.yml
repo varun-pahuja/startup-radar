@@ -39,7 +39,7 @@ jobs:
         with:
           version: "latest"
       - name: Download database
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: startup-radar-db
           path: data/
@@ -66,7 +66,7 @@ jobs:
         with:
           version: "latest"
       - name: Download database
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: startup-radar-db
           path: data/
@@ -94,7 +94,7 @@ jobs:
         with:
           version: "latest"
       - name: Download database
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: startup-radar-db
           path: data/
