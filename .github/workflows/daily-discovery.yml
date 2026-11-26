@@ -23,7 +23,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run startup-radar discover
       - name: Upload database as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: startup-radar-db
           path: data/startup_radar.db
@@ -50,7 +50,7 @@ jobs:
       - name: Run ranking
         run: uv run startup-radar rank
       - name: Upload updated database
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: startup-radar-db
           path: data/startup_radar.db
@@ -77,7 +77,7 @@ jobs:
       - name: Generate reports
         run: uv run startup-radar report
       - name: Upload reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: startup-radar-reports
           path: reports/

@@ -28,7 +28,7 @@ jobs:
       - name: Generate HTML snapshot
         run: uv run startup-radar sync --html
       - name: Upload reports + HTML
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: weekly-report
           path: |
