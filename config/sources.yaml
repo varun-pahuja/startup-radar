@@ -1,0 +1,48 @@
+# sources.yaml — what to pull. Only legal public sources.
+
+github:
+  enabled: true
+  orgs:
+    - supabase
+    - cloudflare
+    - vercel
+    - shadcn-ui
+    - tldraw
+    - calcom
+    - documenso
+    - twentyhq
+    - hoppscotch
+    - triggerdotdev
+  labels:
+    - good first issue
+    - help wanted
+  languages:
+    - TypeScript
+    - Python
+    - JavaScript
+  max_per_org: 10
+  max_age_days: 45
+
+hackernews:
+  enabled: true
+  queries:
+    - full stack
+    - frontend
+    - typescript
+    - python
+    - ai engineer
+  max_age_days: 30
+
+yc:
+  enabled: true
+  batches: [W25, S25, W26]
+  max_companies: 200
+
+ats:
+  enabled: true
+  # Add companies you track: { provider: greenhouse|ashby|lever|workable, slug: ... }
+  companies: []
+
+rss:
+  enabled: false
+  feeds: []

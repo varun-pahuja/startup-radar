@@ -1,0 +1,19 @@
+# llm.yaml — optional enrichment. Off by default; heuristics always run.
+
+enabled: true
+provider: openai-compatible
+model: "auto"
+temperature: 0.2
+max_tokens: 800
+
+# Cost caps (per run)
+cost_caps:
+    max_requests_per_run: 50
+    max_tokens_per_run: 200000
+    max_input_tokens_per_call: 8000
+    max_output_tokens_per_call: 2000
+
+tasks:
+    enrich_opportunity: true
+    summarize_company: true
+    draft_outreach: true

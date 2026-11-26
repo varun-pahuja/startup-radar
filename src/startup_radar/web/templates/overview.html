@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Overview · Startup Radar{% endblock %}
+{% block content %}
+<h1>Overview</h1>
+
+<section class="stats">
+  <div class="stat"><span class="n">{{ total }}</span><span class="l">scored</span></div>
+  {% for band, count in by_band.items() %}
+    <div class="stat"><span class="n">{{ count }}</span><span class="l">{{ band }}</span></div>
+  {% endfor %}
+  {% for kind, count in by_kind.items() %}
+    <div class="stat muted"><span class="n">{{ count }}</span><span class="l">{{ kind }}</span></div>
+  {% endfor %}
+</section>
+
+<h2>Top opportunities</h2>
+{% if top %}
+<table>
+  <thead><tr><th>Score</th><th>Band</th><th>Company</th><th>Role / issue</th><th>Kind</th></tr></thead>
+  <tbody>
+  {% for opp, score, company in top %}
+    <tr>
+      <td class="num">{{ score.total|round|int }}</td>
+      <td><span class="band {{ score.band|lower }}">{{ score.band }}</span></td>
+      <td>{{ company.name if company else 'Unknown' }}</td>
+      <td><a href="/opportunity/{{ opp.id }}">{{ opp.title[:70] }}</a></td>
+      <td>{{ opp.kind }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Nothing scored yet. Run <code>startup-radar discover</code> then <code>rank</code>.</p>
+{% endif %}
+
+<div class="two-col">
+  <section>
+    <h2>Open tasks</h2>
+    {% if tasks %}
+      <ul class="plain">
+      {% for task in tasks %}<li>{{ task.title }}</li>{% endfor %}
+      </ul>
+      <p><a href="/sheet/tasks">Edit tasks →</a></p>
+    {% else %}
+      <p class="empty">No open tasks.</p>
+    {% endif %}
+  </section>
+  <section>
+    <h2>Recent activity</h2>
+    {% if recent %}
+      <ul class="plain">
+      {% for a in recent %}
+        <li><span class="muted">{{ a.ts.strftime('%b %d %H:%M') }}</span> {{ a.action }} {{ a.note }}</li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No activity yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

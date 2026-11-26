@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{{ tab }} · Startup Radar{% endblock %}
+{% block content %}
+<div class="sheet-head">
+  <h1>{{ tab|capitalize }}</h1>
+  <nav class="tabs">
+    {% for t in tabs %}
+      <a class="{% if t == tab %}active{% endif %}" href="/sheet/{{ t }}">{{ t }}</a>
+    {% endfor %}
+  </nav>
+</div>
+
+{% if tab == 'opportunities' %}
+<table class="grid">
+  <thead>
+    <tr><th>Company</th><th>Role / issue</th><th>Kind</th><th>Score</th><th>Band</th><th>Status</th><th>Notes</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+  {% for opp, score, company in rows %}
+    <tr>
+      <td>{{ company.name if company else 'Unknown' }}</td>
+      <td><a href="{{ opp.url|safe_url }}" target="_blank" rel="noopener noreferrer">{{ opp.title[:64] }}</a></td>
+      <td>{{ opp.kind }}</td>
+      <td class="num">{{ score.total|round|int }}</td>
+      <td><span class="band {{ score.band|lower }}">{{ score.band }}</span></td>
+      <td>
+        <select name="status" hx-patch="/api/opportunities/{{ opp.id }}" hx-trigger="change" hx-swap="none">
+          {% for st in statuses %}
+            <option value="{{ st }}" {% if opp.status == st %}selected{% endif %}>{{ st }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td><input name="notes" value="{{ opp.notes }}" placeholder="…"
+                 hx-patch="/api/opportunities/{{ opp.id }}" hx-trigger="change" hx-swap="none"></td>
+      <td><span class="conf {{ opp.confidence }}">{{ opp.confidence }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not rows %}<p class="empty">No opportunities yet.</p>{% endif %}
+
+{% elif tab == 'tasks' %}
+<form class="add" method="post" action="/api/tasks">
+  <input name="title" placeholder="New task…" required>
+  <button type="submit">Add</button>
+</form>
+<table class="grid">
+  <thead><tr><th>Task</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for task in rows %}
+    <tr>
+      <td>{{ task.title }}</td>
+      <td>
+        <select name="status" hx-patch="/api/tasks/{{ task.id }}" hx-trigger="change" hx-swap="none">
+          <option value="open" {% if task.status == 'open' %}selected{% endif %}>open</option>
+          <option value="done" {% if task.status == 'done' %}selected{% endif %}>done</option>
+        </select>
+      </td>
+      <td><button class="danger" hx-delete="/api/tasks/{{ task.id }}" hx-target="closest tr" hx-swap="outerHTML">✕</button></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not rows %}<p class="empty">No tasks yet.</p>{% endif %}
+
+{% elif tab == 'outreach' %}
+<table class="grid">
+  <thead><tr><th>Opportunity</th><th>To</th><th>Subject</th><th>Status</th><th>Follow-up</th><th></th></tr></thead>
+  <tbody>
+  {% for item, title in rows %}
+    <tr>
+      <td><a href="/opportunity/{{ item.opportunity_id or 0 }}">{{ (title or 'Unknown')[:44] }}</a></td>
+      <td>#{{ item.contact_id or '—' }}</td>
+      <td><input name="subject" value="{{ item.subject }}"
+                 hx-patch="/api/outreach/{{ item.id }}" hx-trigger="change" hx-swap="none"></td>
+      <td>
+        <select name="status" hx-patch="/api/outreach/{{ item.id }}" hx-trigger="change" hx-swap="none">
+          {% for st in ['draft','approved','sent'] %}
+            <option value="{{ st }}" {% if item.status == st %}selected{% endif %}>{{ st }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td class="muted">
+        {% if item.id in due_ids %}
+          due {{ item.followup_due.strftime('%b %d') }} · {{ followups[item.id] }}/2
+          <button hx-post="/api/outreach/{{ item.id }}/followup" hx-swap="none">done</button>
+        {% elif item.followup_due %}
+          {{ item.followup_due.strftime('%b %d') }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td><a href="/api/outreach/{{ item.id }}/eml">.eml</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not rows %}<p class="empty">No outreach drafts yet. Open an opportunity and press “Draft outreach”.</p>{% endif %}
+
+{% elif tab == 'applications' %}
+<table class="grid">
+  <thead><tr><th>Opportunity</th><th>Type</th><th>Status</th><th>Notes</th></tr></thead>
+  <tbody>
+  {% for item in rows %}
+    <tr>
+      <td>#{{ item.opportunity_id or '—' }}</td>
+      <td>{{ item.type }}</td>
+      <td>
+        <select name="status" hx-patch="/api/applications/{{ item.id }}" hx-trigger="change" hx-swap="none">
+          {% for st in ['todo','applied','interview','offer','rejected'] %}
+            <option value="{{ st }}" {% if item.status == st %}selected{% endif %}>{{ st }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td><input name="notes" value="{{ item.notes }}"
+                 hx-patch="/api/applications/{{ item.id }}" hx-trigger="change" hx-swap="none"></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if not rows %}<p class="empty">No applications tracked yet.</p>{% endif %}
+
+{% else %}
+<table class="grid">
+  <thead><tr><th>When</th><th>Action</th><th>Note</th></tr></thead>
+  <tbody>
+  {% for a in rows %}
+    <tr><td class="muted">{{ a.ts.strftime('%b %d %H:%M') }}</td><td>{{ a.action }}</td><td>{{ a.note }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

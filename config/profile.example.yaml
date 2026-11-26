@@ -1,0 +1,32 @@
+# profile.example.yaml — copy to profile.yaml and edit.
+# profile.yaml is gitignored so your real data never reaches the repo.
+
+name: Your Name
+location: City, Country
+timezone: Asia/Kolkata
+education: Your degree, your college
+graduation_year: 2027
+links:
+  github: your-github-username
+  linkedin: https://www.linkedin.com/in/your-handle/
+  email: you@example.com
+
+experience: []
+
+# Split what you can prove from what you're learning.
+demonstrated_stack: []
+learning_stack: []
+
+domains: []          # e.g. [full-stack, ai-integrations, dev-tools, iot, security]
+hours_per_day: "2-3"
+
+targets:
+  company_size: [2, 200]
+  preferred_size: [5, 50]
+  stage: [pre-seed, seed, series-a]
+  location: [remote, india]
+  roles: [full-stack-engineer, frontend-engineer, backend-engineer, ai-engineer, intern]
+
+exclude:
+  - unpaid
+  - bond-or-contract-lock

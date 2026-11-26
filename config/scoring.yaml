@@ -1,0 +1,22 @@
+# scoring.yaml — weights must sum to 100 for the required signals.
+
+weights:
+  skill_match: 50
+  hiring_signal: 30
+  contribution_fit: 20
+
+bands:
+  excellent: 85
+  high: 70
+  medium: 55
+
+eligibility:
+  require_remote_or_india: true
+  exclude_senior: true
+
+# The brief's other four dimensions — off by default (avoid false precision).
+plugins:
+  contact_accessibility: false
+  startup_relevance: false
+  eligibility_detail: false
+  learning_value: false

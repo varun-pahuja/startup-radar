@@ -1,0 +1,11 @@
+# schedule.yaml — documentation for cron / GitHub Actions (no daemon by default).
+
+timezone: Asia/Kolkata
+daily_discovery: "08:00"
+status_sync: "18:00"
+weekly_report: "SUN 19:00"
+
+followups:
+  first_after_days: 5
+  second_after_days: 8
+  max_followups: 2

@@ -1,0 +1,59 @@
+name: Weekly report
+
+on:
+  schedule:
+    - cron: "30 13 * * 0"  # 19:00 Sunday Asia/Kolkata (UTC+5:30)
+  workflow_dispatch:
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run full pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run startup-radar discover
+          uv run startup-radar rank
+          uv run startup-radar report
+      - name: Generate HTML snapshot
+        run: uv run startup-radar sync --html
+      - name: Upload reports + HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-report
+          path: |
+            reports/
+            reports/html/
+          retention-days: 90
+
+  summary:
+    needs: weekly-report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: weekly-report
+          path: weekly/
+      - name: Post summary
+        run: |
+          echo "## Weekly Startup Radar Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f weekly/reports/daily_report.md ]; then
+            cat weekly/reports/daily_report.md >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top 3 Next Actions" >> $GITHUB_STEP_SUMMARY
+          if [ -f weekly/reports/next_actions.md ]; then
+            head -20 weekly/reports/next_actions.md >> $GITHUB_STEP_SUMMARY
+          fi

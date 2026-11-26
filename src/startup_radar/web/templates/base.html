@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Startup Radar{% endblock %}</title>
+  <meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">◆ Startup Radar</a>
+    <nav>
+      <a href="/">Overview</a>
+      {% for t in ['opportunities','outreach','applications','tasks','activity'] %}
+        <a href="/sheet/{{ t }}">{{ t }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>Local tool · draft-only · every row carries its source</footer>
+</body>
+</html>

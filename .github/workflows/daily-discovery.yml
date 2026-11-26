@@ -1,0 +1,115 @@
+name: Daily discovery
+
+on:
+  schedule:
+    - cron: "30 2 * * *"  # 08:00 Asia/Kolkata (UTC+5:30)
+  workflow_dispatch:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run discovery
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: uv run startup-radar discover
+      - name: Upload database as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-radar-db
+          path: data/startup_radar.db
+          retention-days: 7
+
+  rank:
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Download database
+        uses: actions/download-artifact@v4
+        with:
+          name: startup-radar-db
+          path: data/
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run ranking
+        run: uv run startup-radar rank
+      - name: Upload updated database
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-radar-db
+          path: data/startup_radar.db
+          retention-days: 7
+
+  report:
+    needs: rank
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Download database
+        uses: actions/download-artifact@v4
+        with:
+          name: startup-radar-db
+          path: data/
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Generate reports
+        run: uv run startup-radar report
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-radar-reports
+          path: reports/
+          retention-days: 30
+
+  sync:
+    needs: report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON != '' || secrets.NOTION_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Download database
+        uses: actions/download-artifact@v4
+        with:
+          name: startup-radar-db
+          path: data/
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Sync to Sheets
+        if: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON != '' }}
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: uv run startup-radar sync --sheets
+      - name: Sync to Notion
+        if: ${{ secrets.NOTION_TOKEN != '' }}
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
+        run: uv run startup-radar sync --notion

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ opp.title[:50] }} · Startup Radar{% endblock %}
+{% block content %}
+<p><a href="/sheet/opportunities">← back to sheet</a></p>
+<h1>{{ opp.title }}</h1>
+<p class="muted">
+  {{ company.name if company else 'Unknown' }} · {{ opp.kind }} ·
+  <span class="band {{ score.band|lower }}">{{ score.band }} {{ score.total|round|int }}</span>
+</p>
+
+<h2>Score breakdown</h2>
+<table class="kv">
+  <tr><th>Skill match</th><td>{{ score.skill_match }} / 50</td></tr>
+  <tr><th>Hiring signal</th><td>{{ score.hiring_signal }} / 30</td></tr>
+  <tr><th>Contribution fit</th><td>{{ score.contribution_fit }} / 20</td></tr>
+  <tr><th>Total</th><td><strong>{{ score.total }}</strong></td></tr>
+  <tr><th>Why</th><td>{{ score.rationale }}</td></tr>
+</table>
+
+<h2>Provenance</h2>
+<table class="kv">
+  <tr><th>Source</th><td>{{ opp.source }}</td></tr>
+  <tr><th>Source URL</th><td><a href="{{ opp.source_url|safe_url }}" target="_blank" rel="noopener noreferrer">{{ opp.source_url }}</a></td></tr>
+  <tr><th>Fetched</th><td>{{ opp.fetched_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+  <tr><th>Confidence</th><td><span class="conf {{ opp.confidence }}">{{ opp.confidence }}</span></td></tr>
+  <tr><th>Posted</th><td>{{ opp.posted_at.strftime('%Y-%m-%d') if opp.posted_at else 'Unknown' }}</td></tr>
+  <tr><th>Location</th><td>{{ opp.location or 'Unknown' }}{% if opp.remote %} · remote{% endif %}</td></tr>
+  <tr><th>Stack</th><td>{{ opp.stack|join(', ') or 'Unknown' }}</td></tr>
+</table>
+
+{% if opp.description %}
+<h2>Description</h2>
+<pre class="desc">{{ opp.description }}</pre>
+{% endif %}
+
+<h2>Contacts</h2>
+{% if contacts %}
+<table class="kv">
+  {% for c in contacts %}
+  <tr>
+    <th>{{ c.role }}</th>
+    <td>
+      <a href="mailto:{{ c.email }}">{{ c.email }}</a>
+      · <span class="conf {{ c.confidence }}">{{ c.confidence }}</span>
+      · <a href="{{ c.source_url|safe_url }}" target="_blank" rel="noopener noreferrer">source</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="muted">No published contact found. Run <code>startup-radar contacts</code> to scan the company site.</p>
+{% endif %}
+
+<h2>Outreach drafts</h2>
+{% if drafts %}
+<table class="kv">
+  {% for d in drafts %}
+  <tr>
+    <th>#{{ d.id }} · {{ d.status }}</th>
+    <td>
+      {{ d.subject }}
+      · <a href="/api/outreach/{{ d.id }}/eml">download .eml</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="muted">Nothing drafted yet.</p>
+{% endif %}
+<form method="post" action="/api/outreach">
+  <input type="hidden" name="opportunity_id" value="{{ opp.id }}">
+  <button type="submit" class="button">Draft outreach (nothing is sent)</button>
+</form>
+
+<p><a class="button" href="{{ opp.url|safe_url }}" target="_blank" rel="noopener noreferrer">Open original →</a></p>
+{% endblock %}
